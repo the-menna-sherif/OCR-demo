@@ -1,4 +1,5 @@
 import warnings
+from pathlib import Path
 
 # Filter out warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -22,36 +23,39 @@ def engine_factory(engine_name):
     else:
         raise ValueError(f"Unsupported engine: {engine_name}")
 
+
+def process_image_folder(engine, image_folder, show_content=False):
+    image_folder = Path(image_folder)
+    image_extensions = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
+    image_paths = sorted(
+        path for path in image_folder.iterdir()
+        if path.is_file() and path.suffix.lower() in image_extensions
+    )
+
+    if not image_paths:
+        raise FileNotFoundError(f"No supported images found in {image_folder}")
+
+    for image_path in image_paths:
+        print(f"\n===== {image_path.name} =====")
+        with MetricsCollector(engine, image_path) as metrics:
+            text = engine.extract_text(image_path)
+
+        if show_content:
+            print("Image content:")
+            print(text.strip() or "[No text detected]")
+        print("Metrics:")
+        print(metrics.result.report())
+
+
 def main():
-    # engine selection
-    engine_name = "vlms"  # options: paddleocr, tesseract, transformers, vlms
+    engine_name = "tesseract"  # options: paddleocr, tesseract, transformers, vlms
     engine = engine_factory(engine_name)
     print(f"Using OCR engine: {engine_name}")
 
-
-    # clear scanned invoice
-    clear_path = r"C:\Users\MennaSherif\Downloads\invoice-phone-cam.jpg"
-    with MetricsCollector(engine, clear_path) as clear_metrics:
-        clear_text = engine.extract_text(clear_path)
-    # print("Extracted text from clear invoice:")
-    # print(clear_text)
-
-    # blurred scanned invoice
-    blurred_path = r"C:\Users\MennaSherif\Downloads\invoice-phone-cam2.jpg"
-    with MetricsCollector(engine, blurred_path) as blurred_metrics:
-        blurred_text = engine.extract_text(blurred_path)
-    print("Extracted text from blurred invoice:")
-    print(blurred_text)
-
-    # device baseline specs, printed first as a frame of reference for the metrics below
     print("*************** device specs *******************")
     print(get_device_specs().report())
-
-    # metric prints
-    print("*************** metrics *******************")
-
-    print(clear_metrics.result.report())
-    print(blurred_metrics.result.report())
+    image_folder = Path(__file__).parent / "test-images"
+    process_image_folder(engine, image_folder, show_content=False)
 
 
 
