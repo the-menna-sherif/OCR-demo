@@ -1,16 +1,24 @@
 from engines.tesseract import TesseractEngine
+from engines.paddleOCR import PaddleOCREngine
 from monitoring.metrics import MetricsCollector
 from monitoring.whoami import get_device_specs
+
+import warnings
+
+# Filter out warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 def engine_factory(engine_name):
     if engine_name == "tesseract":
         return TesseractEngine()
+    if engine_name == "paddleocr":
+        return PaddleOCREngine()
     else:
         raise ValueError(f"Unsupported engine: {engine_name}")
 
 def main():
     # engine selection
-    engine_name = "tesseract"  
+    engine_name = "paddleocr"  # Change to "tesseract" to use Tesseract engine
     engine = engine_factory(engine_name)
     print(f"Using OCR engine: {engine_name}")
 
