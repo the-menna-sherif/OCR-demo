@@ -12,11 +12,10 @@ The collected metrics are:
 - Elapsed processing time in seconds
 - Average and maximum system CPU utilization
 - Average and maximum utilization for every detected NVIDIA GPU
+- Prompt, completion, and total token counts for Ollama-backed engines
 - Device baseline information: logical CPU cores, RAM, GPU name, and VRAM
 
-GPU utilization is reported as `0.0%` in the results below because the sampled
-GPU did not perform measurable work during these runs. CPU monitoring remains
-available when no NVIDIA GPU or NVML driver is detected.
+CPU monitoring remains available when no NVIDIA GPU or NVML driver is detected.
 
 ## Architecture
 
@@ -50,12 +49,12 @@ data. PaddleOCR and PaddlePaddle are required when `paddleocr` is selected.
 Ollama and the configured DeepSeek-OCR model are required when `vlms` is
 selected.
 
-In `main.py`, choose the engine and configure the input images:
+In `main.py`, choose the engine and configure the input folder:
 
 ```python
 engine_name = "paddleocr"  # or "tesseract", "transformers", or "vlms"
-clear_path = "path/to/clear-invoice.jpg"
-blurred_path = "path/to/blurred-invoice.jpg"
+image_folder = Path(__file__).parent / "test-images"
+process_image_folder(engine, image_folder, show_content=False)
 ```
 
 Run the demo with:
@@ -75,26 +74,50 @@ uv run python main.py
 
 ## Results
 
-### Tesseract
+### Tesseract Folder Run
 
-| Input image | Time (s) | CPU average | CPU maximum | GPU average | GPU maximum |
+The following results were collected by iterating over all six images in the
+project's `test-images` folder on the recorded device.
+
+| Image | Time (s) | CPU average | CPU maximum | GPU average | GPU maximum |
 |---|---:|---:|---:|---:|---:|
-| Clear invoice | 0.976 | 10.4% | 18.5% | 0.0% | 0.0% |
-| Blurred invoice | 0.735 | 9.8% | 17.7% | 0.0% | 0.0% |
+| `arabic-handwriting.jpg` | 1.450 | 18.3% | 36.8% | 15.5% | 26.0% |
+| `invoice-phone-cam.jpg` | 0.520 | 6.0% | 9.2% | 4.3% | 11.0% |
+| `invoice-phone-cam2.jpg` | 0.418 | 8.1% | 14.2% | 1.0% | 1.0% |
+| `invoice-scan.jpg` | 0.515 | 40.3% | 100.0% | 1.0% | 1.0% |
+| `skewed-arabic-form.jpg` | 0.773 | 6.3% | 9.2% | 3.2% | 4.0% |
+| `spanish-computer-pic.jpg` | 0.845 | 7.3% | 11.6% | 4.4% | 11.0% |
 
-### PaddleOCR
 
-| Input image | Time (s) | CPU average | CPU maximum | GPU average | GPU maximum |
+### PaddleOCR Folder Run
+
+The following results were collected by iterating over all six images in the
+project's `test-images` folder on the recorded device.
+
+| Image | Time (s) | CPU average | CPU maximum | GPU average | GPU maximum |
 |---|---:|---:|---:|---:|---:|
-| Clear invoice | 145.221 | 30.2% | 54.5% | 0.0% | 0.0% |
-| Blurred invoice | 98.928 | 35.9% | 52.2% | 0.0% | 0.0% |
+| `arabic-handwriting.jpg` | 2.540 | 26.6% | 38.1% | 4.0% | 11.0% |
+| `invoice-phone-cam.jpg` | 33.043 | 34.4% | 42.4% | 7.2% | 86.0% |
+| `invoice-phone-cam2.jpg` | 29.661 | 36.9% | 50.7% | 15.8% | 52.0% |
+| `invoice-scan.jpg` | 32.175 | 32.0% | 39.9% | 0.0% | 0.0% |
+| `skewed-arabic-form.jpg` | 94.774 | 27.2% | 46.9% | 0.5% | 7.0% |
+| `spanish-computer-pic.jpg` | 67.933 | 35.8% | 42.0% | 2.4% | 31.0% |
 
-### DeepSeek-OCR
+### DeepSeek-OCR Folder Run
 
-| Input image | Time (s) | CPU average | CPU maximum | GPU average | GPU maximum |
-|---|---:|---:|---:|---:|---:|
-| Clear invoice (`invoice-phone-cam.jpg`) | 4.808 | 15.3% | 25.7% | 37.2% | 88.0% |
-| Blurred invoice (`invoice-phone-cam2.jpg`) | 3.157 | 17.7% | 32.0% | 65.3% | 88.0% |
+The following results were collected by iterating over all six images in the
+project's `test-images` folder. The device baseline was 32 logical CPU cores,
+63.7 GB RAM, and an NVIDIA RTX 3500 Ada Generation Laptop GPU with 12.0 GB
+VRAM.
+
+| Image | Time (s) | CPU average | CPU maximum | GPU average | GPU maximum | Input tokens | Output tokens | Total tokens |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `arabic-handwriting.jpg` | 18.978 | 8.7% | 34.9% | 65.2% | 100.0% | 1190 | 2906 | 4096 |
+| `invoice-phone-cam.jpg` | 2.329 | 8.5% | 12.0% | 80.1% | 100.0% | 910 | 296 | 1206 |
+| `invoice-phone-cam2.jpg` | 2.481 | 8.2% | 17.5% | 70.7% | 92.0% | 1120 | 344 | 1464 |
+| `invoice-scan.jpg` | 2.197 | 9.2% | 13.8% | 72.7% | 91.0% | 910 | 311 | 1221 |
+| `skewed-arabic-form.jpg` | 15.955 | 12.3% | 28.0% | 82.2% | 93.0% | 910 | 3186 | 4096 |
+| `spanish-computer-pic.jpg` | 5.113 | 8.9% | 15.4% | 81.0% | 100.0% | 910 | 1004 | 1914 |
 
 ## Engine Comparison
 
