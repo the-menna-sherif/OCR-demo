@@ -30,7 +30,7 @@ class PaddleOCREngine:
 
     def extract_text(self, image_path):
         # Load an image and perform OCR
-        results = self.ocr.predict(image_path)
+        results = self.ocr.predict(str(image_path))
         lines = []
         for page in results:
             lines.extend(page["rec_texts"])
