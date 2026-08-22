@@ -15,6 +15,12 @@
 
 - [ ] Monitoring: tokens
 - [ ] Monitoring: character-per-second throughput
+- [ ] Test cases:
+    - [ ] Arabic document
+    - [ ] Asian language document
+    - [ ] Banking type document
+    - [ ] Messy handwriting document
+    - [ ] Skewed image
 - [ ] Frontend
 - [ ] Make CRAFT and PARSeq work
 - [ ] Show Mostafa
