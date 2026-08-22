@@ -13,14 +13,14 @@
 
 ## To Do
 
-- [ ] Monitoring: tokens
+- [x] Monitoring: tokens
 - [ ] Monitoring: character-per-second throughput
 - [ ] Test cases:
-    - [ ] Arabic document
+    - [x] Arabic document
     - [ ] Asian language document
     - [ ] Banking type document
-    - [ ] Messy handwriting document
-    - [ ] Skewed image
+    - [x] Messy handwriting document
+    - [x] Skewed image
 - [ ] Frontend
 - [ ] Make CRAFT and PARSeq work
 - [ ] Show Mostafa
