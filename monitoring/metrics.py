@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from monitoring.time import OCRTimer
 from monitoring.compute_util import ComputeMonitor
+from monitoring.token_util import OllamaTokenCounter
 
 
 @dataclass
@@ -14,6 +15,8 @@ class OCRMetrics:
     cpu_max_percent: Optional[float] = None
     gpu_avg_percent: List[float] = field(default_factory=list)
     gpu_max_percent: List[float] = field(default_factory=list)
+    prompt_tokens: Optional[int] = None
+    completion_tokens: Optional[int] = None
 
     def report(self) -> str:
         lines = [f"{self.engine_name} processed {self.image_title} in {self.elapsed_seconds:.3f}s"]
@@ -21,16 +24,21 @@ class OCRMetrics:
             lines.append(f"CPU Util -> Avg: {self.cpu_avg_percent:.1f}% | Max: {self.cpu_max_percent:.1f}%")
         for idx, (avg_g, max_g) in enumerate(zip(self.gpu_avg_percent, self.gpu_max_percent)):
             lines.append(f"GPU {idx} Util -> Avg: {avg_g:.1f}% | Max: {max_g:.1f}%")
+        if self.prompt_tokens is not None:
+            total = self.prompt_tokens + self.completion_tokens
+            lines.append(f"Tokens -> Input: {self.prompt_tokens} | Output: {self.completion_tokens} | Total: {total}")
         return "\n".join(lines)
 
 
 class MetricsCollector:
-    """Single entry point for collecting all monitoring metrics (timing + compute utilization) for one OCR run."""
+    """Single entry point for collecting all monitoring metrics (timing + compute utilization + tokens) for one OCR run."""
 
     def __init__(self, engine, image_path, poll_interval=0.2):
+        self.engine = engine
         self.image_path = image_path
         self._timer = OCRTimer(engine)
         self._compute_monitor = ComputeMonitor(interval=poll_interval)
+        self._token_counter = OllamaTokenCounter(engine)
         self.result: Optional[OCRMetrics] = None
 
     def __enter__(self):
@@ -43,6 +51,11 @@ class MetricsCollector:
         self._compute_monitor.__exit__(exc_type, exc_val, exc_tb)
         summary = self._compute_monitor.summary
 
+        # Engines that call Ollama stash their raw API response here so token
+        # counts can be pulled without changing the extract_text() call site.
+        response = getattr(self.engine, "last_response", None)
+        tokens = self._token_counter.record(self.image_path, response) if response is not None else None
+
         self.result = OCRMetrics(
             engine_name=timing.engine_name,
             image_title=timing.image_title,
@@ -51,5 +64,7 @@ class MetricsCollector:
             cpu_max_percent=summary.get("cpu_max"),
             gpu_avg_percent=summary.get("gpu_avg", []),
             gpu_max_percent=summary.get("gpu_max", []),
+            prompt_tokens=tokens.prompt_tokens if tokens else None,
+            completion_tokens=tokens.completion_tokens if tokens else None,
         )
         return False

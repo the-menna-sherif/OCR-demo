@@ -25,6 +25,7 @@ class DeepSeekOCREngine:
 	def __init__(self):
 		self.client = Client(host=OLLAMA_HOST)
 		self.model = MODEL_NAME
+		self.last_response = None
 
 	def check_connection(self):
 		"""Check that Ollama is reachable and the configured model is available."""
@@ -55,6 +56,7 @@ class DeepSeekOCREngine:
 				images=[buffer.getvalue()],
 				options=GENERATE_OPTIONS,
 			)
+		self.last_response = response
 		return response["response"]
 
 
