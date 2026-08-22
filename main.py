@@ -18,7 +18,7 @@ def engine_factory(engine_name):
 
 def main():
     # engine selection
-    engine_name = "paddleocr"  # Change to "tesseract" to use Tesseract engine
+    engine_name = "paddleocr"  # options: paddleocr, tesseract 
     engine = engine_factory(engine_name)
     print(f"Using OCR engine: {engine_name}")
 
