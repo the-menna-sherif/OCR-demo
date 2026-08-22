@@ -4,11 +4,6 @@ from typing import List, Optional
 from monitoring.time import OCRTimer
 from monitoring.compute_util import ComputeMonitor
 
-import warnings
-
-# Filter out deprecation warnings
-warnings.filterwarnings("ignore", category=FutureWarning, message=".* package is deprecated.*")
-
 
 @dataclass
 class OCRMetrics:
