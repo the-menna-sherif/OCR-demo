@@ -5,7 +5,7 @@
 The OCR demo measures the cost of each image-processing run in addition to
 extracting text. `MetricsCollector` combines elapsed-time measurement with
 periodic CPU and GPU utilization sampling, so the same monitoring workflow can
-be used with both supported engines.
+be used with all supported engines.
 
 The collected metrics are:
 
@@ -47,11 +47,13 @@ uv sync
 
 The monitoring stack uses `psutil` for CPU data and `pynvml` for NVIDIA GPU
 data. PaddleOCR and PaddlePaddle are required when `paddleocr` is selected.
+Ollama and the configured DeepSeek-OCR model are required when `vlms` is
+selected.
 
 In `main.py`, choose the engine and configure the input images:
 
 ```python
-engine_name = "paddleocr"  # or "tesseract"
+engine_name = "paddleocr"  # or "tesseract", "transformers", or "vlms"
 clear_path = "path/to/clear-invoice.jpg"
 blurred_path = "path/to/blurred-invoice.jpg"
 ```
@@ -87,12 +89,20 @@ uv run python main.py
 | Clear invoice | 145.221 | 30.2% | 54.5% | 0.0% | 0.0% |
 | Blurred invoice | 98.928 | 35.9% | 52.2% | 0.0% | 0.0% |
 
+### DeepSeek-OCR
+
+| Input image | Time (s) | CPU average | CPU maximum | GPU average | GPU maximum |
+|---|---:|---:|---:|---:|---:|
+| Clear invoice (`invoice-phone-cam.jpg`) | 4.808 | 15.3% | 25.7% | 37.2% | 88.0% |
+| Blurred invoice (`invoice-phone-cam2.jpg`) | 3.157 | 17.7% | 32.0% | 65.3% | 88.0% |
+
 ## Engine Comparison
 
 | Engine | Clear invoice (s) | Blurred invoice (s) | Average CPU | Peak CPU |
 |---|---:|---:|---:|---:|
 | Tesseract | 0.976 | 0.735 | 10.1% | 18.5% |
 | PaddleOCR | 145.221 | 98.928 | 33.1% | 54.5% |
+| DeepSeek-OCR | 4.808 | 3.157 | 16.5% | 32.0% |
 
 These measurements show that Tesseract completed both runs substantially faster
 and with lower CPU utilization in this environment. The results describe one
